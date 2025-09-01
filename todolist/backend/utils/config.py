@@ -9,6 +9,10 @@ class Settings(BaseSettings):
 
     AUTH_SECRET: str = Field()
 
+    MONGODB_URL: str = Field()
+    MONGODB_USER: str = Field()
+    MONGODB_PASSWORD: str = Field()
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

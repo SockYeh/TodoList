@@ -6,12 +6,17 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from todolist.backend.utils.config import env
+from todolist.backend.utils.database import close_db, open_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:  # noqa: ARG001
     """Context manager for application lifespan."""
+    await open_db()
+
     yield
+
+    await close_db()
 
 
 app = FastAPI(lifespan=lifespan)
