@@ -4,6 +4,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 from pymongo import errors
 
+from todolist.backend.schemas.tasks import TaskCreate
 from todolist.backend.utils.config import env
 
 USER = env.MONGODB_USER
@@ -184,3 +185,9 @@ async def get_task(id: ObjectId) -> TaskModel:
     if not task:
         raise DBErrors.TaskNotFound
     return TaskModel(**switch_id_to_pydantic(task))
+
+
+async def create_task(payload: TaskCreate) -> TaskModel:
+    """Create a new task."""
+    op = await users_db.tasks.insert_one(payload)
+    return TaskModel(**switch_id_to_pydantic(op))
