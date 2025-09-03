@@ -15,7 +15,6 @@ class TaskCreate(BaseModel):
 class TaskUpdate(BaseModel):
     """Schema for updating an existing task."""
 
-    id: int
     title: str | None = None
     description: str | None = None
     completed: bool | None = None
