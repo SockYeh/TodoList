@@ -1,0 +1,1 @@
+uvicorn "todolist.main:app" --reload
