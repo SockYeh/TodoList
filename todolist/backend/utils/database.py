@@ -26,6 +26,9 @@ class DBErrors:
     class PasswordMismatch(Exception):  # noqa: N818
         """Password mismatch error."""
 
+    class TaskNotFound(Exception):  # noqa: N818
+        """Task not found error."""
+
 
 def switch_id_to_pydantic(data: dict) -> dict:
     """Switches the id key to _id for pydantic models."""
@@ -156,3 +159,28 @@ async def create_tasks_db() -> None:
     await users_db.command("collMod", "tasks", validator=tasks_validator)
 
     await users_db.tasks.create_index("title")
+
+
+class TaskModel(BaseModel):
+    """Task model for Pydantic validation."""
+
+    id: ObjectId
+    title: str
+    description: str
+    completed: bool
+    created_at: float
+    model_config = {"arbitrary_types_allowed": True}
+
+
+async def get_all_tasks() -> list[TaskModel]:
+    """Get all tasks from the database."""
+    tasks = await users_db.tasks.find().to_list(100)
+    return [TaskModel(**switch_id_to_pydantic(task)) for task in tasks]
+
+
+async def get_task(id: ObjectId) -> TaskModel:
+    """Get a task by its ID."""
+    task = await users_db.tasks.find_one({"_id": id})
+    if not task:
+        raise DBErrors.TaskNotFound
+    return TaskModel(**switch_id_to_pydantic(task))
