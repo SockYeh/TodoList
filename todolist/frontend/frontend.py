@@ -16,3 +16,14 @@ async def root(request: Request) -> HTMLResponse:
 async def register(request: Request) -> HTMLResponse:
     """Render the registration page."""
     return templates.TemplateResponse("register.html", {"request": request})
+
+
+@router.get("/tasks")
+async def tasks(request: Request) -> HTMLResponse:
+    """Render the tasks page."""
+    if not request.cookies.get("session"):
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Please log in to access tasks."},
+        )
+    return templates.TemplateResponse("tasks.html", {"request": request})

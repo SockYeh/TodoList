@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<script>
+    window.onload = function() {
+        
+        $.ajax({
+            url: '/api/tasks',
+            type: 'GET',
+            success: function (data) {
+                tasks = data.tasks
+                const taskList = document.getElementById('task-list');
+                taskList.innerHTML = '';
+                tasks.forEach(task => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item d-flex align-items-center';
+
+                        const checkBox = document.createElement('input');
+                        checkBox.type = 'checkbox';
+                        checkBox.className = 'form-check-input me-3';
+                        checkBox.checked = task.completed;
+                        checkBox.onchange = function() {
+                            changeCompletionStatus(task.id, checkBox.checked);
+                        };
+
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'flex-grow-1';
+                        if (task.completed) {
+                            infoDiv.innerHTML = `<s>${task.title}<br><span class='text-muted'>${task.description}</span></s>`;
+                        }
+                        else {
+                            infoDiv.innerHTML = `<strong>${task.title}</strong><br><span class='text-muted'>${task.description}</span>`;
+                        }
+
+                        const btnGroup = document.createElement('div');
+                        btnGroup.className = 'btn-group';
+
+                        const updateBtn = document.createElement('button');
+                        updateBtn.className = 'btn btn-sm btn-outline-secondary';
+                        updateBtn.textContent = 'Update';
+                        updateBtn.onclick = function() {
+                            document.getElementById('update-task-title').value = task.title;
+                            document.getElementById('update-task-description').value = task.description;
+                            document.getElementById('save-update-btn').setAttribute('data-task-id', task.id);
+                            var modal = new bootstrap.Modal(document.getElementById('updateModal'));
+                            document.getElementById('updateModal').classList.remove('d-none');
+                            modal.show();
+                        };
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'btn btn-sm btn-outline-danger ms-2';
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.onclick = function() {
+                            deleteTask(task.id);
+                        };
+
+                        btnGroup.appendChild(updateBtn);
+                        btnGroup.appendChild(deleteBtn);
+
+                        li.appendChild(checkBox);
+                        li.appendChild(infoDiv);
+                        li.appendChild(btnGroup);
+                        taskList.appendChild(li);
+                });
+            },
+            error: function (data) {
+
+                alert('Failed to retrieve tasks.' + data.responseJSON);
+
+            },
+        })
+    };
+    function createTask(event) {
+        event.preventDefault();
+        const title = document.getElementById('task-title').value;
+        const description = document.getElementById('task-description').value;
+        $.ajax({
+            url: '/api/tasks',
+            type: 'POST',
+            data: JSON.stringify({title: title, description: description}),
+            contentType: 'application/json',
+               success: function (data) {
+               window.location.href = '/tasks'
+            },
+            error: function (data) {
+
+                alert('Failed to create task.' + data.responseJSON.message);
+
+            },
+        })
+    }
+    function changeCompletionStatus(taskId, completed) {
+        $.ajax({
+            url: `/api/tasks/${taskId}`,
+            type: 'PATCH',
+            data: JSON.stringify({completed: completed}),
+            contentType: 'application/json',
+            success: function (data) {
+                window.location.href = '/tasks'
+            },
+            error: function (data) {
+
+                alert('Failed to update task status.' + data.responseJSON.message);
+
+            },
+        })
+    }
+    function deleteTask(taskId) {
+        $.ajax({
+            url: `/api/tasks/${taskId}`,
+            type: 'DELETE',
+            success: function (data) {
+                window.location.href = '/tasks'
+            },
+            error: function (data) {
+
+                alert('Failed to delete task.' + data.responseJSON.message);
+
+            },
+        })
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('save-update-btn').onclick = function() {
+            const taskId = this.getAttribute('data-task-id');
+            const newTitle = document.getElementById('update-task-title').value;
+            const newDescription = document.getElementById('update-task-description').value;
+            $.ajax({
+                url: `/api/tasks/${taskId}`,
+                type: 'PATCH',
+                data: JSON.stringify({title: newTitle, description: newDescription}),
+                contentType: 'application/json',
+                success: function (data) {
+                    var modalEl = document.getElementById('updateModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                    window.location.href = '/tasks';
+                },
+                error: function (data) {
+                    alert('Failed to update task.' + data.responseJSON.message);
+                },
+            });
+        };
+    });
+</script>
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Create Task</h3>
+                    <form id="task-form" onsubmit="createTask(event)">
+                        <div class="mb-2">
+                            <label for="task-title" class="form-label">Task Title</label>
+                            <input type="text" class="form-control" id="task-title" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="task-description" class="form-label">Task Description</label>
+                            <textarea class="form-control" id="task-description" rows="3" required></textarea>
+                        </div>
+                        <br>
+                        <div class="mb-2 text-center">
+                            <button type="submit" class="btn btn-primary">Create Task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+    </div>
+    <br>
+    <div class="row justify-content-center">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Task List</h3>
+                    <ul id="task-list" class="list-group">
+                        <!-- Tasks get added here -->
+                    </ul>
+                </div>
+            </div>
+    </div>
+</div>
+
+<div class="modal d-none" tabindex="-1" id="updateModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="update-task-form">
+                    <div class="mb-3">
+                        <label for="update-task-title" class="form-label">Task Title</label>
+                        <input type="text" class="form-control" id="update-task-title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="update-task-description" class="form-label">Task Description</label>
+                        <textarea class="form-control" id="update-task-description" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-update-btn" onclick="updateTask()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
