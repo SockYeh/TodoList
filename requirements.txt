@@ -1,1 +1,8 @@
-
+fastapi
+uvicorn
+pydantic
+pymongo
+motor
+passlib
+bcrypt
+pydantic-settings
