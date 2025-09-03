@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script>
+    function login(event) {
+        event.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        $.ajax({
+            url: '/api/auth/login',
+            type: 'POST',
+            data: JSON.stringify({email: email, password: password}),
+            contentType: 'application/json',
+               success: function (data) {
+                window.location.href = '/tasks'
+            },
+            error: function (data) {
+                
+                alert('Invalid email or password.');
+                
+            },
+        })
+                
+    }
+</script>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Login</h3>
+                    <form id="auth-form" onsubmit="login(event)">
+                        
+                        <div class="mb-5">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-5">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <div class="mb-5 text-center">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

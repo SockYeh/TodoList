@@ -8,6 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from todolist.backend.routers import auth, tasks
 from todolist.backend.utils.config import env
 from todolist.backend.utils.database import close_db, open_db
+from todolist.frontend import frontend
 
 
 @asynccontextmanager
@@ -31,6 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-routers = [auth.router, tasks.router]
+routers = [auth.router, tasks.router, frontend.router]
 for router in routers:
     app.include_router(router)
