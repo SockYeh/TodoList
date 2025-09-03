@@ -120,3 +120,39 @@ async def authenticate_user(email: str, password: str) -> UserModel:
     if not verify_password(password, user["password"]):
         raise DBErrors.PasswordMismatch
     return UserModel(**switch_id_to_pydantic(user))
+
+
+async def create_tasks_db() -> None:
+    """Create the tasks database."""
+    await client.drop_database("tasks")
+
+    tasks_validator = {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["title", "description", "completed", "created_at"],
+            "properties": {
+                "title": {
+                    "bsonType": "string",
+                    "description": "must be a string. Title of the task",
+                },
+                "description": {
+                    "bsonType": "string",
+                    "description": "must be a string. Description of the task",
+                },
+                "completed": {
+                    "bsonType": "bool",
+                    "description": "must be a boolean. Completion status of the task",
+                },
+                "created_at": {
+                    "bsonType": "timestamp",
+                    "description": "must be a unix timestamp. Creation timestamp of the task",
+                },
+            },
+        },
+    }
+
+    await users_db.create_collection("tasks")
+
+    await users_db.command("collMod", "tasks", validator=tasks_validator)
+
+    await users_db.tasks.create_index("title")
