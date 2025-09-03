@@ -6,7 +6,6 @@ from pydantic import BaseModel
 class TaskCreate(BaseModel):
     """Schema for creating a new task."""
 
-    id: int
     title: str
     description: str
     completed: bool
