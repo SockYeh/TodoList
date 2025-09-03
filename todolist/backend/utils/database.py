@@ -30,6 +30,9 @@ class DBErrors:
     class TaskNotFound(Exception):  # noqa: N818
         """Task not found error."""
 
+    class TaskExists(Exception):  # noqa: N818
+        """Task already exists error."""
+
 
 def switch_id_to_pydantic(data: dict) -> dict:
     """Switches the id key to _id for pydantic models."""
@@ -189,16 +192,22 @@ async def get_task(id: ObjectId) -> TaskModel:
 
 async def create_task(payload: TaskCreate) -> TaskModel:
     """Create a new task."""
-    op = await users_db.tasks.insert_one(payload)
+    try:
+        op = await users_db.tasks.insert_one(payload)
+    except errors.DuplicateKeyError as e:
+        raise DBErrors.TaskExists from e
     return TaskModel(**switch_id_to_pydantic(op))
 
 
 async def update_task(_id: ObjectId, payload: TaskUpdate) -> TaskModel:
     """Update an existing task."""
-    await users_db.tasks.update_one(
-        {"_id": _id},
-        {"$set": payload.model_dump(exclude_unset=True)},
-    )
+    try:
+        await users_db.tasks.update_one(
+            {"_id": _id},
+            {"$set": payload.model_dump(exclude_unset=True)},
+        )
+    except Exception as e:
+        raise DBErrors.TaskNotFound from e
     return await get_task(_id)
 
 
