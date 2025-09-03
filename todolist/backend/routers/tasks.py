@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, Request
 
-from todolist.backend.schemas.tasks import TaskCreate
+from todolist.backend.schemas.tasks import TaskCreate, TaskUpdate
 from todolist.backend.utils.database import (
     TaskModel,
     create_task,
     get_all_tasks,
     get_task,
+    update_task,
 )
 from todolist.backend.utils.session import validate_session
 
@@ -46,4 +47,15 @@ async def create_new_task(
 ) -> dict[str, dict]:
     """Create a new task."""
     task = await create_task(payload)
+    return {"task": parse_task(task)}
+
+
+@router.put("/{task_id}")
+async def update_existing_task(
+    request: Request,  # noqa: ARG001
+    task_id: str,
+    payload: TaskUpdate,
+) -> dict[str, dict]:
+    """Update an existing task."""
+    task = await update_task(task_id, payload)
     return {"task": parse_task(task)}
