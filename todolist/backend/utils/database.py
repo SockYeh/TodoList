@@ -151,7 +151,7 @@ async def create_tasks_db() -> None:
                     "description": "must be a boolean. Completion status of the task",
                 },
                 "created_at": {
-                    "bsonType": "timestamp",
+                    "bsonType": "double",
                     "description": "must be a unix timestamp. Creation timestamp of the task",
                 },
             },
@@ -190,13 +190,13 @@ async def get_task(id: ObjectId) -> TaskModel:
     return TaskModel(**switch_id_to_pydantic(task))
 
 
-async def create_task(payload: TaskCreate) -> TaskModel:
+async def create_task(payload: TaskCreate) -> dict[str, str]:
     """Create a new task."""
     try:
-        op = await users_db.tasks.insert_one(payload)
+        op = await users_db.tasks.insert_one(payload.model_dump())
     except errors.DuplicateKeyError as e:
         raise DBErrors.TaskExists from e
-    return TaskModel(**switch_id_to_pydantic(op))
+    return {"task_id": str(op.inserted_id)}
 
 
 async def update_task(_id: ObjectId, payload: TaskUpdate) -> TaskModel:
