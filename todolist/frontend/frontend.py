@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 router = APIRouter(prefix="", tags=["frontend"])
-templates = Jinja2Templates(directory=r".\todolist\frontend")
+templates = Jinja2Templates(directory=r"./todolist/frontend")
 
 
 @router.get("/")

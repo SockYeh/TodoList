@@ -35,3 +35,11 @@ app.add_middleware(
 routers = [auth.router, tasks.router, frontend.router]
 for router in routers:
     app.include_router(router)
+
+from pathlib import Path
+
+print(Path.cwd())
+print(Path(__file__).parent)
+
+
+print(list(Path(__file__).parent.glob("./frontend/templates/*")))
