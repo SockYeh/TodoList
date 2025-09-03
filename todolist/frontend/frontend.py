@@ -27,3 +27,10 @@ async def tasks(request: Request) -> HTMLResponse:
             {"request": request, "error": "Please log in to access tasks."},
         )
     return templates.TemplateResponse("tasks.html", {"request": request})
+
+
+@router.get("/logout")
+async def logout(request: Request) -> HTMLResponse:
+    """Render the logout page."""
+    request.session.clear()
+    return templates.TemplateResponse("login.html", {"request": request})
