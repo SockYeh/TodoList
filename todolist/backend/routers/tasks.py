@@ -1,6 +1,12 @@
 from fastapi import APIRouter, Depends, Request
 
-from todolist.backend.utils.database import TaskModel, get_all_tasks, get_task
+from todolist.backend.schemas.tasks import TaskCreate
+from todolist.backend.utils.database import (
+    TaskModel,
+    create_task,
+    get_all_tasks,
+    get_task,
+)
 from todolist.backend.utils.session import validate_session
 
 router = APIRouter(
@@ -30,4 +36,14 @@ async def get_task_by_id(
 ) -> dict[str, dict]:
     """Get a task by its ID."""
     task = await get_task(task_id)
+    return {"task": parse_task(task)}
+
+
+@router.post("/")
+async def create_new_task(
+    request: Request,  # noqa: ARG001
+    payload: TaskCreate,
+) -> dict[str, dict]:
+    """Create a new task."""
+    task = await create_task(payload)
     return {"task": parse_task(task)}
