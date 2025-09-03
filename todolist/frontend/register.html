@@ -2,7 +2,7 @@
 
 {% block content %}
 <script>
-    function login(event) {
+    function register(event) {
         event.preventDefault();
         const email = document.getElementById('email').value;
         const username = document.getElementById('username').value;
@@ -36,8 +36,8 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h3 class="card-title text-center">Login</h3>
-                    <form id="auth-form" onsubmit="login(event)">
+                    <h3 class="card-title text-center">Register</h3>
+                    <form id="auth-form" onsubmit="register(event)">
                         <div class="mb-5">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" required>
