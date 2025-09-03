@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 from pymongo import errors
 
-from todolist.backend.schemas.tasks import TaskCreate
+from todolist.backend.schemas.tasks import TaskCreate, TaskUpdate
 from todolist.backend.utils.config import env
 
 USER = env.MONGODB_USER
@@ -191,3 +191,12 @@ async def create_task(payload: TaskCreate) -> TaskModel:
     """Create a new task."""
     op = await users_db.tasks.insert_one(payload)
     return TaskModel(**switch_id_to_pydantic(op))
+
+
+async def update_task(_id: ObjectId, payload: TaskUpdate) -> TaskModel:
+    """Update an existing task."""
+    await users_db.tasks.update_one(
+        {"_id": _id},
+        {"$set": payload.model_dump(exclude_unset=True)},
+    )
+    return await get_task(_id)
