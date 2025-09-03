@@ -4,6 +4,7 @@ from todolist.backend.schemas.tasks import TaskCreate, TaskUpdate
 from todolist.backend.utils.database import (
     TaskModel,
     create_task,
+    delete_task,
     get_all_tasks,
     get_task,
     update_task,
@@ -59,3 +60,12 @@ async def update_existing_task(
     """Update an existing task."""
     task = await update_task(task_id, payload)
     return {"task": parse_task(task)}
+
+
+@router.delete("/{task_id}")
+async def remove_task(
+    request: Request,  # noqa: ARG001
+    task_id: str,
+) -> dict[str, str]:
+    """Delete an existing task."""
+    await delete_task(task_id)
