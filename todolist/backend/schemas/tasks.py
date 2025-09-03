@@ -8,7 +8,7 @@ class TaskCreate(BaseModel):
 
     title: str
     description: str
-    completed: bool
+    completed: bool = False
     created_at: float = time()
 
 
