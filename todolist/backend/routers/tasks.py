@@ -32,21 +32,21 @@ async def get_task(
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
-async def get_tasks(request: Request) -> dict[str, list[dict]]:  # noqa: ARG001
+async def get_tasks(request: Request) -> dict[str, list[dict]]:
     """Get all tasks."""
-    tasks = await db.get_all_tasks()
+    tasks = await db.get_all_tasks(request.session["userid"])
     parsed_tasks = [parse_task(task) for task in tasks]
     return {"tasks": parsed_tasks}
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_task(
-    request: Request,  # noqa: ARG001
+    request: Request,
     payload: TaskCreate,
 ) -> dict[str, str]:
     """Create a new task."""
     try:
-        op = await db.create_task(payload)
+        op = await db.create_task(request.session["userid"], payload)
     except db.DBErrors.TaskExists as e:
         raise HTTPException(status_code=400, detail="Task already exists") from e
     return op

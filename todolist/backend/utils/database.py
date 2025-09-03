@@ -136,7 +136,7 @@ async def create_tasks_db() -> None:
     tasks_validator = {
         "$jsonSchema": {
             "bsonType": "object",
-            "required": ["title", "description", "completed", "created_at"],
+            "required": ["title", "description", "completed", "created_at", "user_id"],
             "properties": {
                 "title": {
                     "bsonType": "string",
@@ -153,6 +153,10 @@ async def create_tasks_db() -> None:
                 "created_at": {
                     "bsonType": "double",
                     "description": "must be a unix timestamp. Creation timestamp of the task",
+                },
+                "user_id": {
+                    "bsonType": "objectId",
+                    "description": "must be an objectId. ID of the user who created the task",
                 },
             },
         },
@@ -176,9 +180,9 @@ class TaskModel(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
-async def get_all_tasks() -> list[TaskModel]:
+async def get_all_tasks(user_id: str) -> list[TaskModel]:
     """Get all tasks from the database."""
-    tasks = await users_db.tasks.find().to_list(100)
+    tasks = await users_db.tasks.find({"user_id": ObjectId(user_id)}).to_list(100)
     return [TaskModel(**switch_id_to_pydantic(task)) for task in tasks]
 
 
@@ -190,10 +194,12 @@ async def get_task(id: ObjectId) -> TaskModel:
     return TaskModel(**switch_id_to_pydantic(task))
 
 
-async def create_task(payload: TaskCreate) -> dict[str, str]:
+async def create_task(user_id: str, payload: TaskCreate) -> dict[str, str]:
     """Create a new task."""
     try:
-        op = await users_db.tasks.insert_one(payload.model_dump())
+        op = await users_db.tasks.insert_one(
+            {**payload.model_dump(), "user_id": ObjectId(user_id)},
+        )
     except errors.DuplicateKeyError as e:
         raise DBErrors.TaskExists from e
     return {"task_id": str(op.inserted_id)}
