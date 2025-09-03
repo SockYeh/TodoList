@@ -6,8 +6,14 @@ router = APIRouter(prefix="", tags=["frontend"])
 templates = Jinja2Templates(directory=r"todolist\frontend")
 
 
-@router.get("/login")
+@router.get("/")
 async def root(request: Request) -> HTMLResponse:
+    """Render the login page."""
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.get("/login")
+async def login(request: Request) -> HTMLResponse:
     """Render the login page."""
     return templates.TemplateResponse("login.html", {"request": request})
 
