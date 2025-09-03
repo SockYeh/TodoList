@@ -200,3 +200,10 @@ async def update_task(_id: ObjectId, payload: TaskUpdate) -> TaskModel:
         {"$set": payload.model_dump(exclude_unset=True)},
     )
     return await get_task(_id)
+
+
+async def delete_task(_id: ObjectId) -> None:
+    """Delete a task by its ID."""
+    result = await users_db.tasks.delete_one({"_id": _id})
+    if result.deleted_count == 0:
+        raise DBErrors.TaskNotFound
